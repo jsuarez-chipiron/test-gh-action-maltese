@@ -1,8 +1,8 @@
 name: Maltese delta deploy
 
 on:
-  # push:
-  #   branches: [ "master" ]
+  push:
+    branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
 
