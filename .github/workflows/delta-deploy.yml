@@ -16,14 +16,17 @@ jobs:
     runs-on: ubuntu-latest
     # environment: SIT
 
-    if: contains(github.event.head_commit.message, 'deploy')
+    # if: contains(github.event.head_commit.message, 'deploy')
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       - uses: actions/checkout@v3
 
       - name: Install SFDX
+        env:
+          MESSAGE: ${{ github.event.head_commit.message }}
         run: |
+          echo "$MESSAGE"
           sudo npm install sfdx-cli --global
           sfdx --version
           sfdx plugins --core
