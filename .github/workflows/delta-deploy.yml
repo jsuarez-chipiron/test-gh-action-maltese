@@ -1,4 +1,4 @@
-name: SAS delta deploy
+name: Maltese delta deploy
 
 on:
   # push:
@@ -17,6 +17,7 @@ jobs:
     # environment: SIT
 
     # if: contains(github.event.head_commit.message, 'deploy')
+    ## OJO DARLE UNA VUELTA
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -25,8 +26,9 @@ jobs:
       - name: Install SFDX
         env:
           MESSAGE: ${{ github.event.head_commit.message }}
+          MY_SECRET: ${{ secrets.MALTESE }}
         run: |
-          echo "$MESSAGE"
+          echo "$MY_SECRET"
           sudo npm install sfdx-cli --global
           sfdx --version
           sfdx plugins --core
@@ -34,20 +36,21 @@ jobs:
       - name: SFDX version
         run: sfdx --version
 
-      # - name: Auth SFDC
-      #   env:
-      #     JWT_KEY_B64: ${{ secrets.JWT_KEY_B64 }}
-      #     JWT_CUSTOMER_ID: ${{ secrets.JWT_CUSTOMER_ID }}
-      #   run: |
-      #     echo "$JWT_KEY_B64" | base64 -d > server.key
-      #     sfdx auth:jwt:grant --client-id $JWT_CUSTOMER_ID --jwt-key-file server.key --username jsuarez@sas.dk2.sit --instance-url https://flysas--sit.sandbox.my.salesforce.com --alias default
+      - name: Auth SFDC
+        env:
+          JWT_KEY_B64: ${{ secrets.JWT_KEY_B64 }}
+          JWT_CUSTOMER_ID: ${{ secrets.JWT_CUSTOMER_ID }}
+        run: |
+          echo "$JWT_KEY_B64" | base64 -d > server.key
+          sfdx auth:jwt:grant --client-id $JWT_CUSTOMER_ID --jwt-key-file server.key --username jsuarez@sas.dk2.sit --instance-url https://flysas--sit.sandbox.my.salesforce.com --alias default
 
-      # - name: Generate delta
-      #   run: |
-      #     sfdx force:source:convert -d target/src -x manifest/delta.xml
+      - name: Generate delta
+        run: |
+          sfdx force:source:convert -d target/src -x manifest/delta.xml
 
-      # - name: Validate delta
-      #   run: |
-      #     # sfdx force:mdapi:deploy -u default -d target/src/ -w 30 -l RunLocalTests -c
-      #     export SPECIFIED_TEST=$(./bin/extract-tests manifest/delta.xml)
-      #     sfdx force:mdapi:deploy -u default -d target/src/ -w 30 -c -l RunSpecifiedTests -r "$SPECIFIED_TEST"
+      - name: Validate delta
+        run: |
+          sfdx force:mdapi:deploy -u default -d target/src/ -w 30 -l RunLocalTests -c
+
+          # export SPECIFIED_TEST=$(./bin/extract-tests manifest/delta.xml)
+          # sfdx force:mdapi:deploy -u default -d target/src/ -w 30 -c -l RunSpecifiedTests -r "$SPECIFIED_TEST"
